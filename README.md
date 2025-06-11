@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Model-Controller-Presenter (MCP) server that provides a natural language interface for database operations using LLM-powered SQL generation.
+MCP Server that provides a natural language interface for database operations using **LLM-powered SQL generation**.
 
-## ✨ Features
+## Features
 
 - **Natural Language to SQL**  
   Translate plain English into SQL queries effortlessly.
@@ -24,7 +24,7 @@ A Model-Controller-Presenter (MCP) server that provides a natural language inter
 - **Safe SQL Execution**  
   Validates and restricts unsafe SQL to prevent harmful operations.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -102,7 +102,7 @@ response = requests.post("http://localhost:8080/db_query", json={
 print(response.json())
 ```
 
-## 🛠️ Development
+## Development
 
 ### Project Structure
 
@@ -130,15 +130,15 @@ mcp-server-for-db/
    pytest tests/
    ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with [FastMCP](https://github.com/yourusername/fastmcp)
 - Uses [Ollama](https://ollama.ai/) for LLM capabilities
