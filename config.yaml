@@ -1,0 +1,9 @@
+# MCP Server Configuration
+# Author: devsen
+
+db:
+  uri: sqlite:///./example.db
+llm:
+  provider: ollama
+  base_url: http://localhost:11434
+  model: codellama:7b
