@@ -1,4 +1,4 @@
-# MCP Server for Database Operations
+# MCP Server for Database Operations 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -6,12 +6,23 @@ A Model-Controller-Presenter (MCP) server that provides a natural language inter
 
 ## ✨ Features
 
-- **Natural Language to SQL**: Convert plain English queries into SQL
-- **Multiple Database Support**: Works with any SQLAlchemy-supported database
-- **LLM Integration**: Uses Ollama with CodeLlama model for SQL generation
-- **RESTful API**: Built with FastMCP for easy integration
-- **Schema Awareness**: Automatically understands your database structure
-- **Safe SQL Validation**: Built-in protection against dangerous queries
+- **Natural Language to SQL**  
+  Translate plain English into SQL queries effortlessly.
+
+- **Multi-Database Support**  
+  Compatible with any database supported by SQLAlchemy.
+
+- **LLM Integration**  
+  Model-agnostic framework with default support for local LLMs via Ollama.
+
+- **FastAPI + FastMCP**  
+  Exposes a RESTful API designed for seamless tool use in MCP environments.
+
+- **Schema Awareness**  
+  Automatically detects and uses your database schema for better query generation.
+
+- **Safe SQL Execution**  
+  Validates and restricts unsafe SQL to prevent harmful operations.
 
 ## 🚀 Quick Start
 
