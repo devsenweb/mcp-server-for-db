@@ -1,46 +1,47 @@
-# MCP Server for Database Operations 
+# MCP Server for Database Operations
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-MCP Server that provides a natural language interface for database operations using **LLM-powered SQL generation**.
+An implementation of the **Model Context Protocol (MCP)** that provides a natural language interface for database operations using **LLM-powered SQL generation**.
+This server follows the MCP standards pioneered by [Anthropic](https://www.anthropic.com) to enable structured, context-aware communication between models and tools.
 
 ## Features
 
-- **Natural Language to SQL**  
+* **Natural Language to SQL**
   Translate plain English into SQL queries effortlessly.
 
-- **Multi-Database Support**  
+* **Multi-Database Support**
   Compatible with any database supported by SQLAlchemy.
 
-- **LLM Integration**  
+* **LLM Integration**
   Model-agnostic framework with default support for local LLMs via Ollama.
 
-- **FastAPI + FastMCP**  
+* **FastAPI + FastMCP**
   Exposes a RESTful API designed for seamless tool use in MCP environments.
 
-- **Schema Awareness**  
+* **Schema Awareness**
   Automatically detects and uses your database schema for better query generation.
 
-- **Safe SQL Execution**  
+* **Safe SQL Execution**
   Validates and restricts unsafe SQL to prevent harmful operations.
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
-- [Ollama](https://ollama.ai/) running locally with CodeLlama model
-- SQLite (or any other SQLAlchemy-supported database)
+* Python 3.8+
+* [Ollama](https://ollama.ai/) running locally with CodeLlama model
+* SQLite (or any other SQLAlchemy-supported database)
 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/devsenweb/mcp-server-for-db.git
    cd mcp-server-for-db
    ```
 
 2. Create and activate a virtual environment:
+
    ```bash
    python -m venv .venv
    .venv\Scripts\activate  # On Windows
@@ -49,11 +50,13 @@ MCP Server that provides a natural language interface for database operations us
    ```
 
 3. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. Configure your database in `config.yaml`:
+
    ```yaml
    db:
      uri: sqlite:///./example.db  # Update with your database URI
@@ -64,6 +67,7 @@ MCP Server that provides a natural language interface for database operations us
    ```
 
 5. Create a sample database (optional):
+
    ```bash
    python create_database.py
    ```
@@ -71,24 +75,28 @@ MCP Server that provides a natural language interface for database operations us
 ### Running the Server
 
 Start the MCP server:
+
 ```bash
 python -m mcp_server.server
 ```
 
-## 📚 API Documentation
+## API Documentation
 
 ### Endpoints
 
-- `POST /db_query` - Execute a natural language query
+* `POST /db_query` - Execute a natural language query
+
   ```json
   {
     "prompt": "Show all users who registered in the last 7 days"
   }
   ```
 
-- `GET /db/schema` - Get database schema
-- `GET /db/tables` - List all tables in the database
-- `POST /validate_sql` - Validate SQL query syntax
+* `GET /db/schema` - Get database schema
+
+* `GET /db/tables` - List all tables in the database
+
+* `POST /validate_sql` - Validate SQL query syntax
 
 ### Example Usage
 
@@ -121,11 +129,13 @@ mcp-server-for-db/
 ### Environment Setup
 
 1. Install development dependencies:
+
    ```bash
    pip install -r requirements-dev.txt
    ```
 
 2. Run tests:
+
    ```bash
    pytest tests/
    ```
@@ -140,6 +150,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Built with [FastMCP](https://github.com/yourusername/fastmcp)
-- Uses [Ollama](https://ollama.ai/) for LLM capabilities
-- Powered by [SQLAlchemy](https://www.sqlalchemy.org/)
+* Built with [FastMCP](https://github.com/yourusername/fastmcp)
+* Uses [Ollama](https://ollama.ai/) for LLM capabilities
+* Powered by [SQLAlchemy](https://www.sqlalchemy.org/)
+* Compliant with the Model Context Protocol (MCP) standard by [Anthropic](https://www.anthropic.com)
