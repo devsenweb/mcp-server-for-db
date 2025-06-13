@@ -34,6 +34,17 @@ ENV/
 *.db
 *.sqlite3
 *.sqlite
+example.db
+
+# Test and development files
+test_*.py
+*_test.py
+create_database.py
+check_*.py
+
+# Logs
+*.log
+logs/
 
 # IDE and Editor files
 .vscode/*
@@ -48,6 +59,14 @@ ENV/
 .project
 .pydevproject
 .settings/
+
+# Local configuration
+config.local.yaml
+*.local.yaml
+
+# Misc
+.DS_Store
+Thumbs.db
 
 # Environment variables
 .env
@@ -109,3 +128,28 @@ Thumbs.db
 # Project specific
 example.db
 mcp_server/__pycache__/
+
+# Database related
+database_templates/
+test_data/
+fixtures/
+*.sql
+*.dump
+*.backup
+*.sql.gz
+*.sqlite3-*
+
+# Test database files
+*_test.db
+test_*.db
+*-test.db
+
+# Database migrations (if any)
+migrations/
+alembic/versions/*.py
+!alembic/versions/__init__.py
+
+# Database configuration overrides
+*config*.sql
+*_config*.y*ml
+*_config*.json

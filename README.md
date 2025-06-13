@@ -1,156 +1,288 @@
-# MCP Server for Database Operations
 
-An implementation of the **Model Context Protocol (MCP)** that provides a natural language interface for database operations using **LLM-powered SQL generation**.
-This server follows the MCP standards pioneered by [Anthropic](https://www.anthropic.com) to enable structured, context-aware communication between models and tools.
+# 🗃️ MCP Server for Databases
 
-## Features
+![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
 
-* **Natural Language to SQL**
-  Translate plain English into SQL queries effortlessly.
+A lightweight implementation of the **Model Context Protocol (MCP)** for database operations. This server enables AI models to interact with SQL databases through a structured, tool-based interface, providing safe and efficient database access.
 
-* **Multi-Database Support**
-  Compatible with any database supported by SQLAlchemy.
+---
 
-* **LLM Integration**
-  Model-agnostic framework with default support for local LLMs via Ollama.
+## 📚 Table of Contents
 
-* **FastAPI + FastMCP**
-  Exposes a RESTful API designed for seamless tool use in MCP environments.
+- [🚀 Key Capabilities](#-key-capabilities)
+- [🔧 Getting Started](#-getting-started)
+- [🧠 MCP Interface](#-mcp-interface)
+- [🤖 MCP Client Integration](#-mcp-client-integration)
+- [🧩 LLM Integration](#-llm-integration)
+- [❗ Error Handling](#-error-handling)
+- [🛠️ IDE and Tool Integration](#-ide-and-tool-integration)
+- [⚙️ Development](#-development)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [⚙️ MCP Server Configuration Reference](#-mcp-server-configuration-reference)
+- [🙏 Acknowledgments](#-acknowledgments)
 
-* **Schema Awareness**
-  Automatically detects and uses your database schema for better query generation.
+---
 
-* **Safe SQL Execution**
-  Validates and restricts unsafe SQL to prevent harmful operations.
+## 🚀 Key Capabilities
 
-## Quick Start
+### 🛠️ MCP Tool Integration
+- Exposes database operations as MCP tools for AI model interaction
+- Supports natural language prompts for database exploration
+- Provides schema-aware query building assistance
 
-### Prerequisites
+### 💾 Database Support
+- Works with any SQLAlchemy-compatible database (SQLite, PostgreSQL, MySQL, etc.)
+- Automatic schema inspection and reflection
+- Transaction support for multi-statement operations
 
-* Python 3.8+
-* [Ollama](https://ollama.ai/) running locally with CodeLlama model
-* SQLite (or any other SQLAlchemy-supported database)
+### 📡 MCP Features
+- Native MCP tools, resources, and prompts
+- Support for multiple transport protocols (SSE, WebSocket, stdio)
+- Structured error handling and validation
 
-### Installation
+---
 
-1. Clone the repository:
+## 🔧 Getting Started
 
-   ```bash
-   git clone https://github.com/devsenweb/mcp-server-for-db.git
-   cd mcp-server-for-db
-   ```
+### ✅ Prerequisites
+- Python 3.8+
+- SQLite or any other SQLAlchemy-supported database
 
-2. Create and activate a virtual environment:
-
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate  # On Windows
-   # or
-   source .venv/bin/activate  # On macOS/Linux
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Configure your database in `config.yaml`:
-
-   ```yaml
-   db:
-     uri: sqlite:///./example.db  # Update with your database URI
-   llm:
-     provider: ollama
-     base_url: http://localhost:11434
-     model: codellama:7b  # Or your preferred model
-   ```
-
-5. Create a sample database (optional):
-
-   ```bash
-   python create_database.py
-   ```
-
-### Running the Server
-
-Start the MCP server:
+### ⚙️ Installation
 
 ```bash
-python -m mcp_server.server
+git clone https://github.com/devsenweb/mcp-server-for-db.git
+cd mcp-server-for-db
+python -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+# OR
+.venv\Scripts\activate  # Windows
+pip install -r requirements.txt
 ```
 
-## API Documentation
+### 🛠️ Configuration
 
-### Endpoints
+Edit `config.yaml`:
 
-* `POST /db_query` - Execute a natural language query
+```yaml
+db:
+  uri: sqlite:///./example.db  # Supports any SQLAlchemy URI
+```
 
-  ```json
-  {
-    "prompt": "Show all users who registered in the last 7 days"
-  }
-  ```
+(Optional) Create a sample DB:
 
-* `GET /db/schema` - Get database schema
+```bash
+python create_database.py
+```
 
-* `GET /db/tables` - List all tables in the database
+### ▶️ Starting the MCP Server
 
-* `POST /validate_sql` - Validate SQL query syntax
+```bash
+python -m mcp_server.server --transport sse --port 8080
+# or
+python -m mcp_server.server --transport ws --port 8080
+# or
+python -m mcp_server.server --transport stdio
+```
 
-### Example Usage
+---
+
+## 🧠 MCP Interface
+
+### 📌 Tool Definitions
+
+#### `execute_query`
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/execute_query",
+  "params": {
+    "sql": "SELECT * FROM users WHERE age > 25"
+  },
+  "id": 1
+}
+```
+
+#### `validate_sql`
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/validate_sql",
+  "params": {
+    "sql": "SELECT * FROM users"
+  },
+  "id": 2
+}
+```
+
+---
+
+### 📁 Resource Endpoints
+
+#### `db://schema`
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "resources/get",
+  "params": {
+    "uri": "db://schema"
+  },
+  "id": 3
+}
+```
+
+#### `db://tables`
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "resources/get",
+  "params": {
+    "uri": "db://tables"
+  },
+  "id": 4
+}
+```
+
+---
+
+## 🤖 MCP Client Integration
+
+### 🐍 Python Example
 
 ```python
-import requests
+from mcp.client import MCPClient
+import asyncio
 
-# Natural language query
-response = requests.post("http://localhost:8080/db_query", json={
-    "prompt": "Show me the top 5 highest paid employees"
-})
-print(response.json())
+async def query_database():
+    async with MCPClient("http://localhost:8080") as client:
+        schema = await client.resources.get("db://schema")
+        result = await client.tools.execute_query(
+            sql="SELECT * FROM users WHERE age > 25"
+        )
+        tips = await client.prompts.get("sql-tips")
+        return {
+            "schema": schema,
+            "results": result,
+            "tips": tips
+        }
+
+response = asyncio.run(query_database())
 ```
 
-## Development
+---
 
-### Project Structure
+## 🧩 LLM Integration
+
+### Example with OpenAI
+
+```python
+from mcp.client import MCPClient
+from openai import OpenAI
+
+async def query_with_llm(natural_language_query: str):
+    async with MCPClient("http://localhost:8000") as client:
+        schema = await client.resources.get("db://schema")
+        llm = OpenAI()
+        system_prompt = f"You are a database expert. Given the schema: {schema}..."
+        response = await llm.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": natural_language_query}
+            ]
+        )
+        sql_query = response.choices[0].message.content
+        return await client.tools.execute_query(sql=sql_query)
+```
+
+---
+
+## ❗ Error Handling
+
+```json
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32603,
+    "message": "Database connection failed",
+    "data": {
+      "details": "Connection refused to localhost:5432"
+    }
+  },
+  "id": "unique-request-id"
+}
+```
+
+---
+
+## 🛠️ IDE and Tool Integration
+
+### VSCode (Cursor IDE)
+```json
+{
+  "mcpServers": {
+    "database-query": {
+      "url": "http://localhost:8000/sse",
+      "transport": "sse"
+    }
+  }
+}
+```
+
+### MCP Inspector
+```bash
+npm install -g @modelcontextprotocol/inspector
+mcp-inspector --transport sse --url http://localhost:8000/sse
+# Visit http://localhost:3000
+```
+
+---
+
+## ⚙️ Development
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/
+```
+
+### 📁 Project Structure
 
 ```
 mcp-server-for-db/
 ├── mcp_server/
 │   ├── __init__.py
-│   ├── server.py         # Main server implementation
-│   ├── db_adapter.py     # Database interaction layer
-│   └── llm_adapter.py    # LLM integration
-├── config.yaml           # Configuration file
-├── create_database.py    # Sample database setup
-└── requirements.txt      # Python dependencies
+│   ├── server.py
+│   └── db_adapter.py
+├── config.yaml
+├── create_database.py
+└── requirements.txt
 ```
 
-### Environment Setup
+---
 
-1. Install development dependencies:
+## 🤝 Contributing
 
-   ```bash
-   pip install -r requirements-dev.txt
-   ```
+Contributions are welcome! Feel free to submit a Pull Request.
 
-2. Run tests:
+---
 
-   ```bash
-   pytest tests/
-   ```
+## 📄 License
 
-## Contributing
+Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+---
 
-## License
+## ⚙️ MCP Server Configuration Reference
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```bash
+python -m mcp_server.server   --host 0.0.0.0   --port 8000   --transport sse   --config ./config.yaml
+```
 
-## Acknowledgments
+---
 
-* Built with [FastMCP](https://github.com/yourusername/fastmcp)
-* Uses [Ollama](https://ollama.ai/) for LLM capabilities
-* Powered by [SQLAlchemy](https://www.sqlalchemy.org/)
-* Compliant with the Model Context Protocol (MCP) standard by [Anthropic](https://www.anthropic.com)
+## 🙏 Acknowledgments
+
+- Powered by [SQLAlchemy](https://www.sqlalchemy.org/)
+- Based on the Model Context Protocol (MCP) standard
