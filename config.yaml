@@ -1,9 +1,26 @@
 # MCP Server Configuration
 # Author: devsen
 
-db:
+database:
+  # SQLAlchemy connection string
+  # Examples:
+  # - SQLite: sqlite:///./example.db
+  # - PostgreSQL: postgresql://user:password@localhost/dbname
+  # - MySQL: mysql+pymysql://user:password@localhost/dbname
+  # - SQL Server: mssql+pyodbc://user:password@server/dbname?driver=ODBC+Driver+17+for+SQL+Server
   uri: sqlite:///./example.db
-llm:
-  provider: ollama
-  base_url: http://localhost:11434
-  model: codellama:7b
+  
+  # Connection pool settings (optional)
+  pool_size: 5
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 3600
+  pool_pre_ping: true
+  echo: false  # Set to true for SQL query logging
+
+# Server configuration
+server:
+  host: 0.0.0.0
+  port: 8000
+  debug: false
+  log_level: INFO

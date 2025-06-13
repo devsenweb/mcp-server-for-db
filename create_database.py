@@ -11,19 +11,39 @@ def create_database():
     conn = sqlite3.connect('example.db')
     cursor = conn.cursor()
     
-    # Create users table
+    # Create user_titles table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_titles (
+            id INTEGER PRIMARY KEY,
+            title TEXT UNIQUE NOT NULL
+        )
+    ''')
+    
+    # Create users table with foreign key to user_titles
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             name TEXT,
-            age INTEGER
+            age INTEGER,
+            title_id INTEGER,
+            FOREIGN KEY (title_id) REFERENCES user_titles(id)
         )
     ''')
     
-    # Insert sample data
+    # Insert sample title data
     cursor.executemany(
-        'INSERT OR IGNORE INTO users (name, age) VALUES (?, ?)',
-        [('Alice', 30), ('Bob', 25)]
+        'INSERT OR IGNORE INTO user_titles (id, title) VALUES (?, ?)',
+        [(1, 'Manager'), (2, 'Supervisor'), (3, 'Staff')]
+    )
+    
+    # Insert sample user data with title references
+    cursor.executemany(
+        'INSERT OR IGNORE INTO users (name, age, title_id) VALUES (?, ?, ?)',
+        [
+            ('Alice', 30, 1),    # Alice is Manager
+            ('Bob', 25, 3),      # Bob is Staff
+            ('Charlie', 35, 2)   # Charlie is Supervisor
+        ]
     )
     
     # Commit changes and close connection
