@@ -286,3 +286,11 @@ python -m mcp_server.server   --host 0.0.0.0   --port 8000   --transport sse   -
 
 - Powered by [SQLAlchemy](https://www.sqlalchemy.org/)
 - Based on the Model Context Protocol (MCP) standard
+
+## ⚠️ Disclaimer
+
+This project is a **demo implementation** of an MCP-compatible server for database interaction. It does **not include SQL safety mechanisms**, input sanitization, authentication, or permission controls.
+
+> ⚠️ **Use at your own risk.** This server executes raw SQL and is intended for experimentation, prototyping, and local development only.  
+>  
+> It is the responsibility of the user to implement proper **guardrails**, **validation**, and **security measures** before using this in any production or sensitive environment.
