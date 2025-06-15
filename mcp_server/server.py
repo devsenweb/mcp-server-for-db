@@ -2,6 +2,7 @@
 MCP Server for Database Operations
 
 Author: devsen
+Updated to support new Streamable HTTP transport (MCP v2025-03-26)
 """
 
 from fastmcp import FastMCP
@@ -257,13 +258,17 @@ class MCPServer:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.db.get_tables)
     
-    def run(self, host: str = "0.0.0.0", port: int = 8080, transport: str = "stdio"):
+    def run(self, host: str = "127.0.0.1", port: int = 8000, transport: str = "stdio"):
         """Run the MCP server.
         
         Args:
             host: Host to bind to (for HTTP transports)
-            port: Port to bind to (for HTTP transports)
-            transport: Transport type ("stdio", "sse", or "ws")
+            port: Port to bind to (for HTTP transports)  
+            transport: Transport type ("stdio", "http", "sse", or "ws")
+                      - "stdio": Standard I/O transport (default, most common)
+                      - "http": New Streamable HTTP transport (for web deployment)
+                      - "sse": Legacy SSE transport (deprecated but supported)
+                      - "ws": WebSocket transport
         """
         try:
             logger.info(f"Starting MCP server with transport: {transport}")
@@ -271,18 +276,74 @@ class MCPServer:
             if transport == "stdio":
                 # For stdio transport (most common for MCP)
                 self.mcp.run()
+            elif transport == "http":
+                # For new Streamable HTTP transport (MCP v2025-03-26)
+                # FastMCP uses "streamable-http" as the transport name
+                logger.info("Using Streamable HTTP transport (recommended)")
+                self.mcp.run(transport="streamable-http", host=host, port=port)
             elif transport == "sse":
-                # For Server-Sent Events HTTP transport
+                # For legacy Server-Sent Events HTTP transport (deprecated)
+                logger.warning("SSE transport is deprecated. Consider migrating to Streamable HTTP.")
                 self.mcp.run(transport="sse", host=host, port=port)
             elif transport == "ws":
                 # For WebSocket transport
                 self.mcp.run(transport="ws", host=host, port=port)
             else:
-                raise ValueError(f"Unsupported transport: {transport}")
+                raise ValueError(f"Unsupported transport: {transport}. "
+                               f"Supported: stdio, http, sse (deprecated), ws")
                 
         except Exception as e:
             logger.error(f"Failed to start server: {str(e)}")
             raise
+
+    def run_dual_transport(self, host: str = "127.0.0.1", port: int = 8000):
+        """
+        Run server with both Streamable HTTP and SSE for backward compatibility.
+        This is recommended during the transition period.
+        
+        Args:
+            host: Host to bind to
+            port: Port to bind to (HTTP will use this port, SSE will use port+1)
+        """
+        import threading
+        import time
+        
+        def run_http():
+            try:
+                logger.info(f"Starting Streamable HTTP transport on {host}:{port}")
+                # Fixed: Use "streamable-http" instead of "http"
+                self.mcp.run(transport="streamable-http", host=host, port=port)
+            except Exception as e:
+                logger.error(f"Failed to start HTTP transport: {e}")
+        
+        def run_sse():
+            try:
+                sse_port = port + 1
+                logger.info(f"Starting legacy SSE transport on {host}:{sse_port}")
+                # Create a new instance for SSE to avoid conflicts
+                sse_server = MCPServer(config_path=None)
+                sse_server.mcp.run(transport="sse", host=host, port=sse_port)
+            except Exception as e:
+                logger.error(f"Failed to start SSE transport: {e}")
+        
+        # Start both transports in separate threads
+        http_thread = threading.Thread(target=run_http, daemon=True)
+        sse_thread = threading.Thread(target=run_sse, daemon=True)
+        
+        http_thread.start()
+        time.sleep(1)  # Give HTTP transport time to start
+        sse_thread.start()
+        
+        logger.info(f"Server running with dual transport:")
+        logger.info(f"  - Streamable HTTP (recommended): http://{host}:{port}/mcp")
+        logger.info(f"  - Legacy SSE (deprecated): http://{host}:{port+1}/sse")
+        
+        try:
+            # Keep main thread alive
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            logger.info("Shutting down server...")
 
 def load_config(config_path: Optional[str] = None) -> dict:
     """Load configuration from YAML file."""
@@ -304,18 +365,25 @@ if __name__ == "__main__":
     
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Run MCP Database Server')
-    parser.add_argument('--host', default='0.0.0.0', help='Host to bind to')
-    parser.add_argument('--port', type=int, default=8000, help='Port to bind to')
-    parser.add_argument('--transport', default='http', choices=['http', 'ws', 'sse'],
-                       help='Transport protocol to use')
+    parser.add_argument('--host', default='127.0.0.1', help='Host to bind to (default: 127.0.0.1)')
+    parser.add_argument('--port', type=int, default=8000, help='Port to bind to (default: 8000)')
+    parser.add_argument('--transport', default='stdio', 
+                       choices=['stdio', 'http', 'sse', 'ws', 'dual'],
+                       help='Transport protocol: stdio (default), http, sse (deprecated), ws, dual')
+    parser.add_argument('--dual', action='store_true', 
+                       help='Run both HTTP and SSE transports for backward compatibility')
     
     # Override with config values if not specified in command line
     args = parser.parse_args()
     server_config = config.get('server', {})
     
-    # Start the server using MCP's run method
-    server.run(
-        host=server_config.get('host', args.host),
-        port=server_config.get('port', args.port),
-        transport=server_config.get('transport', args.transport)
-    )
+    host = server_config.get('host', args.host)
+    port = server_config.get('port', args.port)
+    transport = server_config.get('transport', args.transport)
+    
+    # Handle dual transport mode
+    if args.dual or transport == 'dual':
+        server.run_dual_transport(host=host, port=port)
+    else:
+        # Start the server using the specified transport
+        server.run(host=host, port=port, transport=transport)
