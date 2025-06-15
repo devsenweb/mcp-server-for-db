@@ -39,7 +39,7 @@ A lightweight implementation of the **Model Context Protocol (MCP)** for databas
 
 ### 📡 MCP Features
 - Native MCP tools, resources, and prompts
-- Support for multiple transport protocols (SSE, WebSocket, stdio)
+- Support for multiple transport protocols (http, WebSocket, stdio)
 - Structured error handling and validation
 
 ---
@@ -80,7 +80,7 @@ python create_database.py
 ### ▶️ Starting the MCP Server
 
 ```bash
-python -m mcp_server.server --transport sse --port 8080
+python -m mcp_server.server --transport http --port 8080
 # or
 python -m mcp_server.server --transport ws --port 8080
 # or
@@ -219,13 +219,13 @@ async def query_with_llm(natural_language_query: str):
 
 ## 🛠️ IDE and Tool Integration
 
-### VSCode (Cursor IDE)
+### (Cursor IDE) .cursor/mcp.json
 ```json
 {
   "mcpServers": {
     "database-query": {
-      "url": "http://localhost:8000/sse",
-      "transport": "sse"
+      "url": "http://localhost:8000/mcp",
+      "transport": "http"
     }
   }
 }
@@ -234,7 +234,7 @@ async def query_with_llm(natural_language_query: str):
 ### MCP Inspector
 ```bash
 npm install -g @modelcontextprotocol/inspector
-mcp-inspector --transport sse --url http://localhost:8000/sse
+mcp-inspector --transport http --url http://localhost:8000/mcp
 # Visit http://localhost:3000
 ```
 
@@ -277,7 +277,7 @@ Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ## ⚙️ MCP Server Configuration Reference
 
 ```bash
-python -m mcp_server.server   --host 0.0.0.0   --port 8000   --transport sse   --config ./config.yaml
+python -m mcp_server.server   --host 0.0.0.0   --port 8000   --transport http   --config ./config.yaml
 ```
 
 ---
